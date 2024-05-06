@@ -2,6 +2,21 @@
 //вытягивание данных
 //заполнение массива данными из БД
 
+//document.addEventListener('DOMContentLoaded', function(){
+//    let websocket = new WebSocket("ws://localhost:2000");
+//
+//    websocket.onopen = () => {
+//        console.log('[open] Соединение установлено');
+//    };
+//
+//    websocket.onmessage = function (event) {
+//        console.log(`[message] Данные получены с сервера: ${event.data}`);
+//    }
+//
+//    
+//
+//}, false);
+
 //тестовый массив с вопросами
 const arrQuestions = ["Вопрос 1?", "Вопрос 2?", "Вопрос 3?", "Вопрос 4?"];
 
@@ -39,6 +54,9 @@ let nameCompany = ''; //название компании
 let securitiesKind = ''; // вид ценной бумаги
 let securitiesCoast = ''; // стоимость бумаги
 
+//массив с вопросами полученными с сервака
+let arrQuestionsFromServe;
+
 const arrAnswer = []; // массив для записи ответов на вопросы
 
 // находим элементы
@@ -46,6 +64,8 @@ const mainContainer = document.querySelector('main'); //поле с выводо
 
 //логика работы программы
 clearPage()
+getResponse(); //до всей логики вызываю
+
 showPage4FillOutTheForm();
 //showPage5OutputQuestion();
 
@@ -55,6 +75,20 @@ showPage4FillOutTheForm();
 //очистка стартовой старницы
 function clearPage(){
 	mainContainer.innerHTML = '';
+}
+
+//функция для подключения к серверу
+async function getResponse() {
+    let response = await fetch('https://jsonplaceholder.typicode.com/users'); //подключаюсь 
+
+    let content = await response.json();// достаю данные в формате json
+    arrQuestionsFromServe = content.splice(0, 4);// достаю только первые 4
+    //for (const key in content) {
+    //    arrQuestionsFromServe.push(content[key]['name']);
+    //    //console.log('имя с сервака: ' + arrQuestionsFromServe[key]['name']);
+    //}
+    console.log('массив заполнен данными с сервера:');
+    console.log(arrQuestionsFromServe);
 }
 
 //выводим страницу 4 - Заполнение формы
@@ -103,7 +137,6 @@ function showPage4FillOutTheForm(){
         //else{
         //    alert('Поля не заполнены!!!');
         //}
-
         showPage5OutputQuestion();
     });
     
@@ -131,11 +164,12 @@ function showPage5OutputQuestion(){
     </div>
     `;
 
-    const question = mainTemplate
+    const question = mainTemplate.replace('%question%', arrQuestionsFromServe[questionIndex]['name']);
                                 //.replace('%question%', questions[questionIndex]['question'])
                                 //.replace('%explanation%', questions[questionIndex]['explanation']);
-                                .replace('%question%', arrQuestions[questionIndex])
-                                .replace('%explanation%', arrExplanation[questionIndex]);
+                                //.replace('%question%', arrQuestions[questionIndex])
+                                //.replace('%explanation%', arrExplanation[questionIndex]);
+                                
 
     //выводим вопрос
 	mainContainer.innerHTML = question;
@@ -148,7 +182,7 @@ function showPage5OutputQuestion(){
         //присваивание переменной введенное значение
         let val = document.getElementById('valueId').value;
         arrAnswer.push(val);
-        console.log("В массиве: " + arrAnswer);
+        //console.log("В массиве: " + arrAnswer);
 
         nextQuestion();
     });
@@ -157,7 +191,7 @@ function showPage5OutputQuestion(){
 
 ////переход к следующему вопросу
 function nextQuestion(){
-    if(questionIndex !== (questions.length - 1)){
+    if(questionIndex !== (arrQuestionsFromServe.length - 1)){
 		//console.log('это НЕ последний вопрос');
 		questionIndex++;
 		clearPage();
@@ -172,7 +206,7 @@ function nextQuestion(){
         while(arrAnswer.length !== 0){
             arrAnswer.pop();
         }
-        console.log(arrAnswer);
+        //console.log(arrAnswer);
 
         //очистка значения текущего вопроса
         questionIndex = 0;
